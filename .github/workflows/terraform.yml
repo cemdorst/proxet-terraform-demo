@@ -12,15 +12,34 @@ jobs:
     name: "Terraform"
     runs-on: ubuntu-latest
     steps:
+      - name: Get modified dir names
+        id: changed-dir-names
+        uses: tj-actions/changed-files@v39
+        with:
+          dir_names: "true"
+          files: |
+            env/**
+
+      - name: List dirs with changes
+        run: |
+          for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
+            echo "$dir was changed"
+          done
+
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Format
         id: fmt
-        run: terraform fmt -check
+        run: |
+          for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
+            cd $dir
+            terraform fmt -check
+            cd -
+          done
 
       - name: Terraform Init
         id: init
@@ -29,11 +48,20 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          terraform init
+          for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
+            cd $dir
+            terraform init
+            cd -
+          done
       
       - name: Terraform Validate
         id: validate
-        run: terraform validate -no-color
+        run: |
+          for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
+            cd $dir
+            terraform validate -no-color
+            cd -
+          done
 
       - name: Terraform Plan
         id: plan
@@ -43,7 +71,12 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           DIGITALOCEAN_TOKEN: ${{ secrets.DO_TOKEN}}
           AWS_REGION: us-east-1
-        run: terraform plan -no-color
+        run: |
+          for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
+            cd $dir
+            terraform plan -no-color
+            cd -
+          done
         continue-on-error: false
 
       - uses: actions/github-script@0.9.0
@@ -86,4 +119,9 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           DIGITALOCEAN_TOKEN: ${{ secrets.DO_TOKEN}}
           AWS_REGION: us-east-1
-        run: terraform apply -auto-approve
+        run: |
+          for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
+            cd $dir
+            terraform apply -auto-approve
+            cd -
+          done
