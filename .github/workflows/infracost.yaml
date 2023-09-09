@@ -1,0 +1,51 @@
+name: 'infracost'
+
+on:
+  pull_request:
+    paths:
+      - 'env/prod/**/**.tf'
+
+jobs:
+  terraform:
+    name: 'infracost'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Full history required. Non-detached head for diffs
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+        fetch-depth: 0
+
+    # Install Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ~> 1.5
+
+    # Setup Infracost
+    - name: Setup Infracost
+      uses: infracost/actions/setup@v1
+      with:
+        api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+    - name: Run Infracost
+      run: >-
+        git diff --dirstat --diff-filter=ACM origin/${GITHUB_BASE_REF}..${GITHUB_HEAD_REF} -- "env/prod/**/**.tf"
+        | awk '{print $NF}'
+        | xargs -I X bash -c "infracost breakdown --project-name ${{ github.repository }} --terraform-parse-hcl --out-file /tmp/infracost-\$RANDOM.json --format json --path X || (echo 'unexpected infracost failure'; exit 0)"
+
+    - name: Post Infracost comment
+      run: |
+        # See https://www.infracost.io/docs/features/cli_commands/#comment-on-pull-requests for other options.
+        infracost comment github --path "/tmp/infracost-*.json" \
+                                 --repo $GITHUB_REPOSITORY \
+                                 --github-token ${{github.token}} \
+                                 --pull-request ${{github.event.pull_request.number}} \
+                                 --behavior update \
+        || true
