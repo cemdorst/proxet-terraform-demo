@@ -38,7 +38,7 @@ jobs:
       run: >-
         git diff --dirstat --diff-filter=ACM origin/${GITHUB_BASE_REF}..${GITHUB_HEAD_REF} -- "env/prod/**/**.tf"
         | awk '{print $NF}'
-        | xargs -I X bash -c "infracost breakdown --project-name ${{ github.repository }} --terraform-parse-hcl --out-file /tmp/infracost-\$RANDOM.json --format json --path X || (echo 'unexpected infracost failure'; exit 0)"
+        | xargs -I X bash -c "infracost breakdown --terraform-parse-hcl --out-file /tmp/infracost-\$RANDOM.json --format json --path X || (echo 'unexpected infracost failure'; exit 0)"
 
     - name: Post Infracost comment
       run: |
