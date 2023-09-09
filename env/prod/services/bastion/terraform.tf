@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "tfstate.caebrasa.demo"
+    bucket = "states.caebrasa.demo"
     key    = "env/prod/services/bastion/terraform.tfstate"
     region = "us-east-1"
   }
