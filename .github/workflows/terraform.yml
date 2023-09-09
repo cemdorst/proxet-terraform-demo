@@ -12,6 +12,9 @@ jobs:
     name: "Terraform"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Get modified dir names
         id: changed-dir-names
         uses: tj-actions/changed-files@v39
@@ -25,9 +28,6 @@ jobs:
           for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
             echo "$dir was changed"
           done
-
-      - name: Checkout
-        uses: actions/checkout@v3
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
