@@ -34,6 +34,9 @@ jobs:
           echo "$dir was changed"
         done
 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
     # Setup Infracost
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
