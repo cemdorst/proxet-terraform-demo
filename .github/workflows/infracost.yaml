@@ -47,7 +47,7 @@ jobs:
     - name: Generate Infracost cost estimate baseline
       run: |
         for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
-          item=$(echo $dir||sed "s/\//-/g")
+          item=$(echo $dir|sed "s/\//-/g")
           infracost breakdown --path=$dir \
                             --format=json \
                             --out-file=/tmp/infracost-base-$item.json
@@ -61,7 +61,7 @@ jobs:
     - name: Generate Infracost diff
       run: |
         for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
-          item=$(echo $dir||sed "s/\//-/g")
+          item=$(echo $dir|sed "s/\//-/g")
           infracost diff --path=$dir \
                         --format=json \
                         --compare-to=/tmp/infracost-base-$item.json \
@@ -71,7 +71,7 @@ jobs:
     - name: Post Infracost comment
       run: |
         for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
-          item=$(echo $dir||sed "s/\//-/g")
+          item=$(echo $dir|sed "s/\//-/g")
           infracost comment github --path=/tmp/infracost-$item.json \
                                    --repo=$GITHUB_REPOSITORY \
                                    --github-token=${{github.token}} \
