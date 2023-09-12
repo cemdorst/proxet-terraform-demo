@@ -47,9 +47,9 @@ jobs:
     - name: Generate Infracost cost estimate baseline
       run: |
         for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
-          infracost breakdown --path=${dir} \
+          infracost breakdown --path=$dir \
                             --format=json \
-                            --out-file=/tmp/infracost-base-${dir}.json
+                            --out-file=/tmp/infracost-base-$dir.json
         done
 
     # Checkout the current PR branch so we can create a diff.
@@ -60,16 +60,16 @@ jobs:
     - name: Generate Infracost diff
       run: |
         for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
-          infracost diff --path=${dir} \
+          infracost diff --path=$dir \
                         --format=json \
-                        --compare-to=/tmp/infracost-base-${dir}.json \
-                        --out-file=/tmp/infracost-${dir}.json
+                        --compare-to=/tmp/infracost-base-$dir.json \
+                        --out-file=/tmp/infracost-$dir.json
         done
 
     - name: Post Infracost comment
       run: |
         for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
-          infracost comment github --path=/tmp/infracost-${dir}.json \
+          infracost comment github --path=/tmp/infracost-$dir.json \
                                    --repo=$GITHUB_REPOSITORY \
                                    --github-token=${{github.token}} \
                                    --pull-request=${{github.event.pull_request.number}} \
