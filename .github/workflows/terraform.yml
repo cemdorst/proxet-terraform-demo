@@ -114,6 +114,7 @@ jobs:
             item=$(echo $dir|sed "s/\//-/g")
             cd $dir
             terraform plan -out=${{ github.workspace }}/$item.plan
+          done
       - uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/*.plan
