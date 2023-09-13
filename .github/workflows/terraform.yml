@@ -107,6 +107,23 @@ jobs:
               body: output
             })
 
+      - name: Terraform Plan Upload
+        if: steps.plan.outcome == 'success'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DIGITALOCEAN_TOKEN: ${{ secrets.DO_TOKEN}}
+          AWS_REGION: us-east-1
+        run: |
+          for dir in ${{ steps.changed-dir-names.outputs.all_changed_files }}; do
+            item=$(echo $dir|sed "s/\//-/g")
+            cd $dir
+            terraform plan -out=${{ github.workspace }}/$item.plan
+          done
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/*.plan
+
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
